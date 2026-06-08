@@ -13,70 +13,155 @@ const TYPE_COLORS = {
   'Mobile App': 'bg-orange-500/10 text-orange-400 border-orange-500/30',
 }
 
-function FeaturedCard({ project, inView }) {
+function FeaturedCard({ project }) {
+  const [cardRef, cardInView] = useInView()
+
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } },
+  }
+  const item = {
+    hidden: { opacity: 0, y: 18 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+  }
+  const itemLeft = {
+    hidden: { opacity: 0, x: -24 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+  }
+  const itemRight = {
+    hidden: { opacity: 0, x: 24 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7 }}
-      className="relative card-featured p-8 mb-6 group"
+      ref={cardRef}
+      initial={{ opacity: 0, y: 40, scale: 0.98 }}
+      animate={cardInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+      className="relative card-featured p-8 mb-6 group overflow-hidden"
     >
-      {/* Glowing corner accent */}
-      <div className="absolute top-0 right-0 w-48 h-48 bg-accent/8 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
+      {/* Animated background orbs */}
+      <div className="absolute top-0 right-0 w-72 h-72 bg-accent/6 rounded-full blur-[60px] pointer-events-none float" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-cyan-400/4 rounded-full blur-[50px] pointer-events-none float-reverse" />
 
-      <div className="relative z-10 grid md:grid-cols-2 gap-8">
+      {/* Top glow line — animates width on enter */}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        animate={cardInView ? { scaleX: 1 } : {}}
+        transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        style={{ originX: 0 }}
+        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-accent via-cyan-300 to-transparent"
+      />
+
+      {/* Left edge glow line */}
+      <motion.div
+        initial={{ scaleY: 0 }}
+        animate={cardInView ? { scaleY: 1 } : {}}
+        transition={{ duration: 0.8, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        style={{ originY: 0 }}
+        className="absolute top-0 left-0 bottom-0 w-px bg-gradient-to-b from-accent via-accent/30 to-transparent"
+      />
+
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate={cardInView ? 'show' : 'hidden'}
+        className="relative z-10 grid md:grid-cols-2 gap-10"
+      >
         {/* Left */}
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <span className="inline-flex items-center gap-1.5 bg-accent/10 text-accent text-xs font-mono px-3 py-1 rounded-full border border-accent/30">
-              <Star size={10} fill="currentColor" /> Graduation Project
-            </span>
-          </div>
-          <h3 className="text-white font-extrabold text-xl sm:text-2xl leading-tight mb-3 group-hover:text-gradient transition-all duration-300">
-            {project.name}
-          </h3>
-          <p className="text-[#CBD5E1] text-sm leading-relaxed mb-5">{project.description}</p>
+        <motion.div variants={itemLeft}>
+          {/* Badge */}
+          <motion.div variants={item} className="flex items-center gap-3 mb-5">
+            <motion.span
+              animate={cardInView ? { boxShadow: ['0 0 0px #38BDF800', '0 0 14px #38BDF860', '0 0 0px #38BDF800'] } : {}}
+              transition={{ duration: 2.5, repeat: Infinity, delay: 0.8 }}
+              className="inline-flex items-center gap-1.5 bg-accent/10 text-accent text-xs font-mono px-3 py-1.5 rounded-full border border-accent/40"
+            >
+              <Star size={10} fill="currentColor" className="animate-pulse" />
+              Graduation Project
+            </motion.span>
+          </motion.div>
 
-          <div className="flex items-center gap-2 text-xs text-[#CBD5E1]/60 font-mono mb-5">
+          {/* Title */}
+          <motion.h3
+            variants={item}
+            className="text-white font-extrabold text-xl sm:text-2xl leading-tight mb-3 group-hover:text-gradient transition-all duration-500"
+          >
+            {project.name}
+          </motion.h3>
+
+          {/* Description */}
+          <motion.p variants={item} className="text-[#CBD5E1] text-sm leading-relaxed mb-5">
+            {project.description}
+          </motion.p>
+
+          {/* Date */}
+          <motion.div variants={item} className="flex items-center gap-2 text-xs text-[#CBD5E1]/50 font-mono mb-6">
             <Calendar size={12} /> {project.date}
-          </div>
+          </motion.div>
 
           {project.link && (
-            <a
+            <motion.a
+              variants={item}
               href={project.link}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 btn-primary text-sm px-5 py-2.5"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
             >
               View Project <ExternalLink size={14} />
-            </a>
+            </motion.a>
           )}
-        </div>
+        </motion.div>
 
         {/* Right */}
-        <div>
-          <p className="text-[10px] font-mono text-accent/60 uppercase tracking-widest mb-3">Key Highlights</p>
-          <ul className="space-y-2.5 mb-6">
-            {project.highlights.map(h => (
-              <li key={h} className="flex items-start gap-2.5 text-sm text-[#CBD5E1]/90">
-                <CheckCircle2 size={14} className="text-accent mt-0.5 shrink-0" />
+        <motion.div variants={itemRight}>
+          <motion.p variants={item} className="text-[10px] font-mono text-accent/60 uppercase tracking-widest mb-4">
+            Key Highlights
+          </motion.p>
+          <ul className="space-y-3 mb-6">
+            {project.highlights.map((h, i) => (
+              <motion.li
+                key={h}
+                variants={item}
+                custom={i}
+                className="flex items-start gap-2.5 text-sm text-[#CBD5E1]/90"
+              >
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={cardInView ? { scale: 1 } : {}}
+                  transition={{ delay: 0.5 + i * 0.08, type: 'spring', stiffness: 300 }}
+                >
+                  <CheckCircle2 size={14} className="text-accent mt-0.5 shrink-0" />
+                </motion.span>
                 <span>{h}</span>
-              </li>
+              </motion.li>
             ))}
           </ul>
-          <div className="flex flex-wrap gap-1.5">
-            {project.tech.map(t => (
-              <span key={t} className="badge-sm">{t}</span>
+
+          {/* Tech badges — staggered pop-in */}
+          <motion.div variants={item} className="flex flex-wrap gap-1.5">
+            {project.tech.map((t, i) => (
+              <motion.span
+                key={t}
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={cardInView ? { opacity: 1, scale: 1 } : {}}
+                transition={{ delay: 0.6 + i * 0.05, type: 'spring', stiffness: 280 }}
+                className="badge-sm"
+              >
+                {t}
+              </motion.span>
             ))}
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </motion.div>
   )
 }
 
-function ProjectCard({ project, index, inView }) {
+function ProjectCard({ project, index }) {
   const typeColor = TYPE_COLORS[project.type] || 'bg-accent/10 text-accent border-accent/30'
 
   return (
@@ -145,7 +230,16 @@ export default function Projects() {
 
   const featured = projects.find(p => p.featured)
   const others = projects.filter(p => !p.featured)
-  const filteredOthers = filter === 'All' ? others : others.filter(p => p.type === filter)
+
+  // When filter is "All" or matches the featured project type, show featured card
+  const showFeatured = filter === 'All' || (featured && filter === featured.type)
+  // Grid shows non-featured projects filtered by type, plus featured if its type is selected
+  const gridProjects =
+    filter === 'All'
+      ? others
+      : filter === featured?.type
+      ? [featured, ...others.filter(p => p.type === filter)]
+      : others.filter(p => p.type === filter)
 
   return (
     <section id="projects" className="py-28 px-6 bg-[#111827] relative overflow-hidden">
@@ -163,10 +257,12 @@ export default function Projects() {
           <div className="section-divider" />
         </motion.div>
 
-        {/* Featured */}
-        {featured && <FeaturedCard project={featured} inView={inView} />}
+        {/* Featured card — always shown on "All" or "Graduation Project" filter */}
+        {featured && showFeatured && filter === 'All' && (
+          <FeaturedCard project={featured} />
+        )}
 
-        {/* Filter */}
+        {/* Filter tabs */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
@@ -194,11 +290,17 @@ export default function Projects() {
         {/* Cards grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <AnimatePresence mode="popLayout">
-            {filteredOthers.map((project, i) => (
-              <ProjectCard key={project.name} project={project} index={i} inView={inView} />
+            {gridProjects.map((project, i) => (
+              <ProjectCard key={project.name} project={project} index={i} />
             ))}
           </AnimatePresence>
         </div>
+
+        {gridProjects.length === 0 && (
+          <p className="text-center text-[#CBD5E1]/40 font-mono text-sm py-12">
+            No projects match this filter.
+          </p>
+        )}
       </div>
     </section>
   )
